@@ -2,8 +2,9 @@ import { Formik } from 'formik';
 import * as Yup from 'yup';
 import { nanoid } from 'nanoid';
 import { StForm, StField, Error, Btn } from './Form.styled';
-import { useDispatch } from 'react-redux';
-import { addContact } from 'redux/contact';
+import { useDispatch, useSelector } from 'react-redux';
+import { getItems } from 'redux/selectors';
+import { addContacts } from 'redux/operation';
 
 const validationSchema = Yup.object().shape({
   name: Yup.string().min(2).max(50).required('* Name is required'),
@@ -15,6 +16,7 @@ const validationSchema = Yup.object().shape({
 
 export const Form = () => {
   const dispatch = useDispatch();
+  const contacts = useSelector(getItems);
 
   return (
     <>
@@ -25,8 +27,17 @@ export const Form = () => {
         }}
         validationSchema={validationSchema}
         onSubmit={(values, actions) => {
-          dispatch(addContact({ ...values, id: nanoid() }));
-          actions.resetForm();
+          const isContactExists = contacts.find(
+            contact =>
+              contact.name.toLowerCase() === values.name.toLowerCase() ||
+              contact.number === values.number
+          );
+          if (isContactExists) {
+            alert('is already in contacts');
+          } else {
+            dispatch(addContacts({ ...values, id: nanoid() }));
+            actions.resetForm();
+          }
         }}
       >
         <StForm>
